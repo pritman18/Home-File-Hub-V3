@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Home File Hub V3</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--panel:#141e33;--line:#2a3a56;--text:#edf3ff;--muted:#9aabc5;--accent:#397ee8;--good:#20b981;--bad:#ef6464}
+:root.light{color-scheme:light;--bg:#f3f6fb;--panel:#fff;--line:#dbe3ef;--text:#17243a;--muted:#63738b;--accent:#245fba;--good:#087e55;--bad:#c03939}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px system-ui,Segoe UI,sans-serif}
+main{max-width:1180px;margin:30px auto;padding:0 18px}header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+h1{margin:0;font-size:clamp(24px,4vw,34px)}h2{margin:0 0 12px}h3{margin:0 0 8px}.muted{color:var(--muted)}.small{font-size:12px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:18px;margin:14px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+button,input,select{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--text);max-width:100%}
+input,select{width:100%;margin:5px 0 10px}button{cursor:pointer;background:var(--accent);color:white;border:0}.secondary{background:transparent;color:var(--text);border:1px solid var(--line)}.danger{background:var(--bad)}
+label{display:block;color:var(--muted);font-size:13px}.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.hidden{display:none!important}
+.status{min-height:22px;color:var(--accent);overflow-wrap:anywhere}.good{color:var(--good)}.bad{color:var(--bad)}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}.tabs button.active{background:var(--accent);color:white}
+table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:10px;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
+.table-wrap{overflow-x:auto}.pill{display:inline-block;padding:4px 9px;border-radius:99px;border:1px solid var(--line);color:var(--muted);font-size:12px}
+.checks{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0}.checks label{display:flex;align-items:center;gap:5px}.checks input{width:auto;margin:0}
+a{color:var(--accent)}.path{overflow-wrap:anywhere}.empty{color:var(--muted);padding:12px 0}
+@media(max-width:600px){main{margin:16px auto;padding:0 12px}.panel{padding:13px}td,th{padding:8px 5px;font-size:13px}}
+</style></head>
+<body><main>
+<header><div><h1>☁ Home File Hub</h1><div class="muted">Private storage · V3.0</div></div>
+<div class="actions"><button class="secondary" id="theme">Toggle theme</button><button class="secondary hidden" id="logout">Sign out</button></div></header>
+<section class="panel" id="loginPanel"><h2>Sign in</h2><p class="muted">Use your Home File Hub account.</p>
+<label>Username</label><input id="username" autocomplete="username">
+<label>Password</label><input id="password" type="password" autocomplete="current-password">
+<button id="login">Sign in</button><p class="status" id="loginStatus"></p></section>
+
+<section id="appPanel" class="hidden">
+<div class="grid">
+ <section class="panel"><h2>Welcome</h2><div id="who" class="muted"></div><p class="pill" id="role"></p></section>
+ <section class="panel"><h2>Storage locations</h2><div id="storageCount">Loading…</div></section>
+ <section class="panel"><h2>Account</h2><div class="muted">Separate Home File Hub account and permissions.</div><p class="pill">Tailnet access is still required</p></section>
+</div>
+<nav class="tabs" id="tabs">
+ <button data-tab="files" class="active">My Files</button>
+ <button data-tab="storage" class="admin-only">Storage Manager</button>
+ <button data-tab="users" class="admin-only">User Manager</button>
+ <button data-tab="permissions" class="admin-only">Permissions</button>
+ <button data-tab="activity" class="admin-only">Activity</button>
+</nav>
+<section class="panel tab" id="tab-files"><h2>My Files</h2><p class="muted">Only storage locations assigned to your account are listed.</p><div id="storageList"></div><p class="status" id="fileStatus"></p><div id="fileBrowser"></div></section>
+
+<section class="panel tab hidden" id="tab-storage"><h2>Storage Manager</h2>
+<p class="muted">Add only folders you intentionally want Home File Hub users to access. Paths are local Windows paths.</p>
+<div class="grid"><div><label>Display name</label><input id="storageName" placeholder="e.g. Documents"></div><div><label>Absolute folder path</label><input id="storagePath" placeholder="e.g. D:\Documents"></div></div>
+<button id="addStorage">Add storage location</button><p class="status" id="storageStatus"></p><div class="table-wrap" id="storageTable"></div></section>
+
+<section class="panel tab hidden" id="tab-users"><h2>User Manager</h2>
+<div class="grid"><div><label>Username (3–64 characters)</label><input id="newUsername" placeholder="e.g. user_a"></div><div><label>Temporary password (minimum 12 characters)</label><input id="newPassword" type="password" placeholder="Set a strong temporary password"></div><div><label>Role</label><select id="newRole"><option value="viewer">Viewer</option><option value="editor">Editor</option><option value="custom">Custom</option><option value="admin">Administrator</option></select></div></div>
+<button id="createUser">Create user</button><p class="status" id="userStatus"></p><div class="table-wrap" id="usersTable"></div></section>
+
+<section class="panel tab hidden" id="tab-permissions"><h2>Folder permissions</h2><p class="muted">Permissions are currently assigned per configured storage location. Nested folder ACLs are not part of this foundation build.</p>
+<div class="grid"><div><label>User</label><select id="permUser"></select></div><div><label>Storage location</label><select id="permStorage"></select></div></div>
+<div class="checks">
+<label><input type="checkbox" id="pList"> List / browse</label>
+<label><input type="checkbox" id="pDownload"> Download</label>
+<label><input type="checkbox" id="pUpload"> Upload</label>
+<label><input type="checkbox" id="pRename"> Rename</label>
+<label><input type="checkbox" id="pDelete"> Delete</label>
+</div><button id="savePermissions">Save permissions</button><p class="status" id="permStatus"></p></section>
+
+<section class="panel tab hidden" id="tab-activity"><h2>Recent activity</h2><div class="table-wrap" id="activityTable"></div><p class="status" id="activityStatus"></p></section>
+</section>
+</main>
+<script>
+let csrf="", me=null, stores=[], users=[];
+const $=id=>document.getElementById(id);
+function msg(id,s,kind=""){let el=$(id);el.textContent=s;el.className="status "+kind}
+async function api(url,opts={}){let headers={...(opts.headers||{})};if(csrf && opts.method && opts.method!=="GET")headers["X-CSRF-Token"]=csrf;let r=await fetch(url,{credentials:"same-origin",...opts,headers});let j=await r.json().catch(()=>({}));if(!r.ok)throw Error(j.detail||"Request failed");return j}
+function err(id,e){msg(id,e.message,"bad")}
+$("theme").onclick=()=>{document.documentElement.classList.toggle("light");localStorage.setItem("hfh-theme",document.documentElement.classList.contains("light")?"light":"dark")};
+if(localStorage.getItem("hfh-theme")==="light")document.documentElement.classList.add("light");
+function showTab(name){document.querySelectorAll(".tab").forEach(x=>x.classList.add("hidden"));$("tab-"+name).classList.remove("hidden");document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("active",b.dataset.tab===name));if(name==="users")loadUsers();if(name==="storage")loadStorageAdmin();if(name==="permissions"){loadUsers();loadStorageAdmin()}if(name==="activity")loadActivity()}
+document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+async function refreshStorage(){stores=await api("/api/storage");$("storageCount").textContent=stores.length+" available location(s)";let host=$("storageList");host.innerHTML="";if(!stores.length){host.textContent="No storage locations have been assigned yet.";return}
+for(let s of stores){let card=document.createElement("div");card.className="panel";let h=document.createElement("h3");h.textContent="📁 "+s.name;let p=document.createElement("p");p.className="muted path";p.textContent=s.path;let b=document.createElement("button");b.textContent="Browse";b.onclick=()=>browse(s,"");card.append(h,p,b);host.append(card)}}
+async function loadStorageAdmin(){try{let all=await api("/api/storage");let t=$("storageTable");t.innerHTML="";let table=document.createElement("table");table.innerHTML="<tr><th>Name</th><th>Path</th><th>ID</th></tr>";for(let s of all){let tr=document.createElement("tr");for(let v of [s.name,s.path,s.id]){let td=document.createElement("td");td.textContent=v;tr.append(td)}table.append(tr)}t.append(table);let sel=$("permStorage");sel.innerHTML="";for(let s of all){let o=document.createElement("option");o.value=s.id;o.textContent=s.name;sel.append(o)}}catch(e){msg("storageStatus",e.message,"bad")}}
+async function loadUsers(){try{users=await api("/api/users");let t=$("usersTable");t.innerHTML="";let table=document.createElement("table");table.innerHTML="<tr><th>ID</th><th>Username</th><th>Role</th><th>Status</th><th>Action</th></tr>";for(let u of users){let tr=document.createElement("tr");for(let v of [u.id,u.username,u.role,u.is_active?"Active":"Disabled"]){let td=document.createElement("td");td.textContent=v;tr.append(td)}let td=document.createElement("td");let b=document.createElement("button");b.className="secondary";b.textContent=u.is_active?"Disable":"Enable";b.disabled=u.id===me.id;b.onclick=async()=>{try{await api(`/api/users/${u.id}/active?active=${!u.is_active}`,{method:"PATCH"});await loadUsers()}catch(e){msg("userStatus",e.message,"bad")}};td.append(b);tr.append(td);table.append(tr)}t.append(table);let sel=$("permUser");sel.innerHTML="";for(let u of users){let o=document.createElement("option");o.value=u.id;o.textContent=u.username;sel.append(o)}}catch(e){msg("userStatus",e.message,"bad")}}
+async function loadActivity(){try{let rows=await api("/api/activity");let t=$("activityTable");t.innerHTML="";let table=document.createElement("table");table.innerHTML="<tr><th>When</th><th>User</th><th>Action</th><th>Target</th></tr>";for(let r of rows){let tr=document.createElement("tr");for(let v of [r.created_at,r.username||"—",r.action,r.target||"—"]){let td=document.createElement("td");td.textContent=v;tr.append(td)}table.append(tr)}t.append(table)}catch(e){msg("activityStatus",e.message,"bad")}}
+async function browse(s,path=""){try{let d=await api("/api/files?storage_id="+s.id+"&path="+encodeURIComponent(path));let host=$("fileBrowser");host.innerHTML="";let title=document.createElement("h3");title.textContent=s.name+" / "+(path||"");host.append(title);if(path){let up=document.createElement("button");up.className="secondary";up.textContent="Up one folder";up.onclick=()=>browse(s,path.split("/").slice(0,-1).join("/"));host.append(up)}
+let table=document.createElement("table");table.innerHTML="<tr><th>Name</th><th>Type</th><th>Size</th><th>Action</th></tr>";for(let it of d.items){let tr=document.createElement("tr");let n=document.createElement("td");n.textContent=it.name;let ty=document.createElement("td");ty.textContent=it.is_dir?"Folder":"File";let sz=document.createElement("td");sz.textContent=it.size==null?"—":it.size.toLocaleString()+" bytes";let ac=document.createElement("td");if(it.is_dir){let b=document.createElement("button");b.textContent="Open";b.onclick=()=>browse(s,path?path+"/"+it.name:it.name);ac.append(b)}else if(s.permissions.can_download){let a=document.createElement("a");a.href="/api/files/download?storage_id="+s.id+"&path="+encodeURIComponent(path?path+"/"+it.name:it.name);a.textContent="Download";ac.append(a)}tr.append(n,ty,sz,ac);table.append(tr)}host.append(table);msg("fileStatus","Loaded "+d.items.length+" item(s).","good")}catch(e){msg("fileStatus",e.message,"bad")}}
+$("login").onclick=async()=>{try{let j=await api("/api/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:$("username").value,password:$("password").value})});csrf=j.csrf_token;await showApp();msg("loginStatus","")}catch(e){msg("loginStatus",e.message,"bad")}};
+async function showApp(){me=await api("/api/me");csrf=me.csrf_token;$("loginPanel").classList.add("hidden");$("appPanel").classList.remove("hidden");$("logout").classList.remove("hidden");$("who").textContent=me.username;$("role").textContent=me.role;if(me.role!=="admin")document.querySelectorAll(".admin-only").forEach(x=>x.classList.add("hidden"));await refreshStorage();if(me.role==="admin"){await loadUsers();await loadStorageAdmin()}}
+$("logout").onclick=async()=>{try{await api("/api/logout",{method:"POST"});location.reload()}catch(e){alert(e.message)}};
+$("addStorage").onclick=async()=>{try{let j=await api("/api/storage",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:$("storageName").value,path:$("storagePath").value})});msg("storageStatus","Added "+j.name+".","good");$("storageName").value="";$("storagePath").value="";await loadStorageAdmin();await refreshStorage()}catch(e){err("storageStatus",e)}};
+$("createUser").onclick=async()=>{try{let j=await api("/api/users",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:$("newUsername").value,password:$("newPassword").value,role:$("newRole").value})});msg("userStatus","Created user "+j.username+".","good");$("newUsername").value="";$("newPassword").value="";await loadUsers()}catch(e){err("userStatus",e)}};
+$("savePermissions").onclick=async()=>{try{let sid=$("permStorage").value;if(!sid)throw Error("Add a storage location first.");await api(`/api/storage/${sid}/permissions`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({user_id:Number($("permUser").value),can_list:$("pList").checked,can_download:$("pDownload").checked,can_upload:$("pUpload").checked,can_rename:$("pRename").checked,can_delete:$("pDelete").checked})});msg("permStatus","Permissions saved.","good");await refreshStorage()}catch(e){err("permStatus",e)}};
+(async()=>{try{await showApp()}catch(e){}})();
+</script></body></html>
