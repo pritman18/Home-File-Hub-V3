@@ -296,4 +296,5 @@ Issues and pull requests are welcome. For security-sensitive findings, please av
 
 ## License
 
-No license has been selected yet. Until a license is added, all rights are reserved by the copyright holder by default. Add a license file only after choosing the terms under which you want others to use, modify and distribute the project.
+This project is licensed under the MIT License.
+See the [LICENSE](LICENSE) file for details.
