@@ -101,7 +101,7 @@ FastAPI + Uvicorn
 Open PowerShell and move to the folder where you want the project:
 
 ```powershell
-git clone https://github.com/YOUR-USERNAME/Home-File-Hub-V3.git
+git clone https://github.com/pritman18/Home-File-Hub-V3.git
 cd Home-File-Hub-V3
 ```
 
