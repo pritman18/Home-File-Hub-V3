@@ -24,6 +24,23 @@ A self-hosted, multi-user file access hub for Windows. Home File Hub provides a 
 - FastAPI interactive API documentation at `/docs`
 - Private remote access through Tailscale Serve
 
+## Application Screenshots
+
+### Dashboard
+![Home File Hub Dashboard](screenshots/dashboard.png)
+
+### Storage Manager
+![Storage Manager](screenshots/Storagemanager.png)
+
+### User Manager
+![User Manager](screenshots/usermanager.png)
+
+### Permission Manager
+![Permission Manager](screenshots/permissionmanager.png)
+
+### Activity Log
+![Activity Log](screenshots/activitylog.png)
+
 ### Current implementation notes
 
 - The browser interface currently provides storage browsing and file downloading, plus administrator interfaces for user management, storage management, permissions and activity.
